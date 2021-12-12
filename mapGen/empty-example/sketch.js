@@ -1,15 +1,13 @@
-let sx = 1800;
-let sy = 1100;
-let res = 4;
-let rows = 10;
-let cols = 10;
-let columns = new Array();
+let sx = 450;
+let sy = 275;
+let res = 6;
 let shapes = [];
-let inc = 0.04;
 let shapeR = 255;
 let shapeG = 255;
 let shapeB = 255;
 
+let pichiMap;
+let finder;
 
 class m_point {
   constructor(x, y, color) {
@@ -26,169 +24,83 @@ class m_point {
 }
 
 function setup() {
-  createCanvas(sx, sy);
-  rows = floor(sy / res);
-  cols = floor(sx / res);
-  noiseDetail(8);
+  createCanvas(sx * res, sy * res);
+  this.pichiMap = new PichiMap(sx, sy);
+  this.pichiMap.Initialize();
+  this.finder = new ShapeFinder(this.pichiMap);
 }
 
 function draw() {
   background(77);
   noStroke();
-  let choices = [1, 0];
 
-  let xoff = 0.01;
-
-  // generate points
-  for (let x = 1; x < cols; x++) {
-
-    let row = [];
-    let yoff = 0.01;
-
-    for (let y = 1; y < rows; y++) {
-
-      //let p = new m_point(x*res, y*res, random());
-      let p = new m_point(x * res, y * res, noise(xoff, yoff));
-      //noiseSeed+= 0.01;
-
-      drawPoint(p);
-      row.push(p);
-      yoff += inc;
-    }
-    columns.push(row);
-    xoff += inc;
-  }
-
-  drawLines();
-  findShapes();
-
-
+  drawMap();
+  let shape = this.finder.FindShape();
+  this.drawShape(shape);
+  //drawLines();
   noLoop();
 }
 
-function findShapes() {
-
-  shapeStarted = false;
-  let maxY = columns[0].length;
-
-  for (let y = 0; y < maxY; y++) {
-    for (let x = 0; x < columns.length; x++) {
-      if (columns[x][y].bit == 1 && !shapeStarted) {
-        if (!pointWalked(x, y)) {
-          shapeStarted = true;
-          traceShape(x, y);
-        }
-      }
-      else if (columns[x][y].bit == 0 && shapeStarted) {
-        shapeStarted = false;
-      }
-    }
-  }
+function drawMap()
+{
+  this.pichiMap.Points.forEach(p => 
+    {
+      this.drawPoint(p)
+    });
+  //for(let x = 0; x < cols; x++)
+  //{
+  //  for(let y = 0; y < rows; y++)
+  //  {
+  //    var p = columns[x][y];
+  //    drawPoint(p);
+  //  }
+  //}
 }
 
-function traceShape(x, y) {
-
-  shapeR = map(random(), 0, 1, 64, 255);
-  shapeG = map(random(), 0, 1, 64, 255);
-  shapeB = map(random(), 0, 1, 64, 255);
-
-  let shapePoints = new Array();
-  let point = getPointAt(x, y);
-  addPoint(point, x, y, shapePoints);
-  walkNeighbours(x, y, shapePoints);
-
-  shapes.push(shapePoints);
-}
-
-function pointWalked(x, y) {
-
-  shapes.forEach(shape => {
-    if (shape.find(p => p.x == x && p.y == y)) {
-      return true;
-    }
-  });
-
-  return false;
-}
-
-function walkNeighbours(x, y, shapePoints) {
-  
-  // find all neighbours to the left
-  let currentX = x-1;
-  let leftPoint = getPointAt(currentX, y);
-  while(leftPoint) {
-    addPoint(leftPoint, currentX, y, shapePoints);
-    currentX -= 1;
-    leftPoint = getPointAt(currentX, y);
-  }
-  
-  // find all neighbours to the right
-  currentX = x+1;
-  let rightPoint = getPointAt(currentX, y);
-  while(rightPoint) {
-    addPoint(rightPoint, currentX, y, shapePoints);
-    currentX += 1;
-    rightPoint = getPointAt(currentX, y);
-  }
-}
-
-function getPointAt(x, y) {
-  if (x < 0 || y < 0 || x >= columns.length || y >= columns[0].length) {
-    return null;
-  }
-
-  let point = columns[x][y];
-  
-  if (point.bit == 1) {
-    return point;
-  }
-  else {
-    return null;
-  }
-}
-
-function addPoint(point, x, y, shapePoints) {
-  if (!point) {
-    return;
-  }
-
-  if (shapePoints.find(p => p.x == x && p.y == y)) {
-    return;
-  }
-
-  shapePoints.push(new m_point(x, y, point.colorStrength));
-  drawShapePoint(point.x, point.y);
-  //findNeighbours(x, y, shapePoints);
-}
-
-function getCoordinates(direction, x, y) {
-  switch (direction) {
-    case "up":
-      return [x, y - 1];
-    case "left":
-      return [x - 1, y];
-    case "right":
-      return [x + 1, y];
-    case "down":
-      return [x, y + 1];
-  }
-}
-
-function drawShapePoint(x, y) {
+function drawShape(shape)
+{
+  const r = random(255);
+  const g = random(255);
+  const b = random(255);
   fill(shapeR, shapeG, shapeB);
-  noStroke();
-  square(x - 2, y - 2, res / 2);
+
+  stroke(64);
+  strokeWeight(0.5);
+  fill(r, g, b);
+
+  for (const [key, value] of shape) 
+  {
+    square(value.X * res, value.Y * res, res);
+  }
 }
 
-function getPoint(x, y) {
-  let next = columns[x][y];
-  if (next.bit == 1) {
-    return next;
+
+
+function drawPoint(drawPoint) {
+  if(!drawPoint) return;
+
+  let colorStrength = map(drawPoint.Value, 0, 1, 0, 255);
+  let r = map(colorStrength, 0, 255, 0, 25);
+  let g = map(colorStrength, 0, 255, 0, 102)
+  let landRed = map(colorStrength, 0, 255, 0, 43);
+  stroke(64);
+  strokeWeight(0.5);
+
+  if (drawPoint.IsLand == 0) 
+  {
+    fill(r, g, colorStrength);
+    //fill(0, 0, colorStrength);
   }
-  else {
-    return null;
+  else 
+  {
+    fill(landRed, colorStrength, 0);
+    //fill(0, colorStrength, 0);
   }
+  
+  square(drawPoint.X * res, drawPoint.Y * res, res);
 }
+
+
 
 function drawLines() {
   for (let i = 0; i < columns.length - 1; i++) {
@@ -205,18 +117,6 @@ function drawLines() {
       drawLine(configuration, a, b, c, d);
     }
   }
-}
-
-function drawPoint(point) {
-  if (point.bit == 0) {
-    fill(0, 0, point.colorStrength * 255);
-  }
-  else {
-    fill(0, point.colorStrength * 255, 0);
-  }
-
-  square(point.x - 2, point.y - 2, res / 2);
-
 }
 
 function getConfiguration(a, b, c, d) {

@@ -1,0 +1,12 @@
+C:\.projects\pichi\mapGenNet\mapGenNet\bin\Debug\net6.0\mapGenNet.deps.json
+C:\.projects\pichi\mapGenNet\mapGenNet\bin\Debug\net6.0\mapGenNet.dll
+C:\.projects\pichi\mapGenNet\mapGenNet\bin\Debug\net6.0\ref\mapGenNet.dll
+C:\.projects\pichi\mapGenNet\mapGenNet\bin\Debug\net6.0\mapGenNet.pdb
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.csproj.AssemblyReference.cache
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.GeneratedMSBuildEditorConfig.editorconfig
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.AssemblyInfoInputs.cache
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.AssemblyInfo.cs
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.csproj.CoreCompileInputs.cache
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.dll
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\ref\mapGenNet.dll
+C:\.projects\pichi\mapGenNet\mapGenNet\obj\Debug\net6.0\mapGenNet.pdb
