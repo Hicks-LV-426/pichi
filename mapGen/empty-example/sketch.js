@@ -1,6 +1,6 @@
 let sx = 450;
 let sy = 275;
-let res = 6;
+let res = 4;
 let shapes = [];
 let shapeR = 255;
 let shapeG = 255;
@@ -68,7 +68,7 @@ function drawShape(shape)
   strokeWeight(0.5);
   fill(r, g, b);
 
-  for (const [key, value] of shape) 
+  for (const [key, value] of shape.Points) 
   {
     square(value.X * res, value.Y * res, res);
   }

@@ -15,11 +15,11 @@ class PichiMap
         let yoff = 0.01;
 
         // generate points
-        for (let y = 0; y < this.Width; y++) 
+        for (let y = 0; y < this.Height; y++) 
         {
             let xoff = 0.01;
 
-            for (let x = 0; x < this.Height; x++)
+            for (let x = 0; x < this.Width; x++)
             {
                 //AddSingleSquare(x, y);
                 this.AddNoisePoint(x, y, xoff, yoff);

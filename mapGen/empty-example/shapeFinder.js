@@ -19,47 +19,44 @@ class ShapeFinder
 
     TraceShape(startingPoint)
     {
-        let points = new Map();
+        let shape = new PichiShape();
 
-        points.set(startingPoint.Key, startingPoint);
-        let lastDirection = 'right';
-        let lastPoint = null;
-        let nextPoint = this.FindNeighbour(startingPoint, points, lastDirection);
+        shape.AddPoint(startingPoint);
+        const defaultDirection = 'right';
+        let nextPoint = this.FindNeighbour(startingPoint, shape, defaultDirection);
 
 
         let counter = 0;
+        let maxWalkDistance = this.pichiMap.Height * this.pichiMap.Width;
 
         while(nextPoint && nextPoint.Pt.Key != startingPoint.Key)
         {
-            if(counter > 2000)
+            if(counter > maxWalkDistance)
             {
                 break;
             }
 
-            lastDirection = nextPoint.Direction;
-            lastPoint = nextPoint.Pt;
-
-            points.set(nextPoint.Pt.Key, nextPoint.Pt);
-            nextPoint = this.FindNeighbour(nextPoint.Pt, points, nextPoint.Direction);
+            shape.AddPoint(nextPoint.Pt);
+            nextPoint = this.FindNeighbour(nextPoint.Pt, shape, nextPoint.Direction);
 
             // try walk back if next point not found
             if(!nextPoint)
             {
-                nextPoint = this.WalkBack(lastDirection, lastPoint, points);
+                nextPoint = this.WalkBack(shape);
             }
             counter += 1;
         }
 
-        return points;
+        return shape;
     }
 
-    FindNeighbour(currentPoint, points, direction)
+    FindNeighbour(currentPoint, shape, direction)
     {
         const walkSequence = this.GetWalkSequence(direction);
 
         for(const dir of walkSequence)
         {
-            let pt = this.FindNeighbourAtDirection(dir, currentPoint, points);
+            let pt = this.FindNeighbourAtDirection(dir, currentPoint, shape);
             if(pt)
             {
                 return { Pt: pt, Direction: dir};
@@ -84,12 +81,12 @@ class ShapeFinder
         }
     }
 
-    FindNeighbourAtDirection(direction, currentPoint, points)
+    FindNeighbourAtDirection(direction, currentPoint, shape)
     {
         let nextLocation = this.GetLocation(direction, currentPoint);
 
         let pt = this.GetPointAt(nextLocation.x, nextLocation.y);
-        if(this.IsValidPoint(pt, points))
+        if(this.IsValidPoint(pt, shape))
         {
             return pt;
         }
@@ -122,92 +119,64 @@ class ShapeFinder
         return null;
     }
 
-    IsValidPoint(nextPoint, points)
+    IsValidPoint(nextPoint, shape)
     {
         if(!nextPoint?.IsLand)
         { 
             return false;
         }
 
-        return !points.has(nextPoint.Key);
+        return !shape.has(nextPoint.Key);
     }
 
-    // unused right now
-    WalkBack(direction, currentPoint, points)
+    WalkBack(shape)
     {
-        const backDirection = this.GetOpositeDirection(direction);
-        const shift = this.GetShiftFromDirection(backDirection);
-
-        // walk back 1 step
-        let x = currentPoint.X + shift.x;
-        let y = currentPoint.Y + shift.y;
-
-        let point = this.GetLandPointAt(x, y);
-
-        while(point)
+        //console.log('walking back @ shape length of ', shape.length());
+        let point = null;
+        for(let i = shape.length() - 2; i > 0; i--)
         {
-            let neightbour = this.FindNeighbour(point, points, direction);
-            if(neightbour)
+            //console.log('looking for neighbours at ', i);
+            point = this.FindNeighbour(shape.point(i), shape, 'right');
+            if(point)
             {
-                point = null;
-                return neightbour;
+                break;
             }
-
-            // walk back 1 step
-            x += shift.x;
-            y += shift.y;
-            point = this.GetLandPointAt(x, y);
         }
 
-        return null;
+        return point;
     }
 
-    GetShiftFromDirection(direction)
-    {
-        switch(direction)
-        {
-            case 'up':
-                return {x: 0, y: -1};
-            case 'right':
-                return {x: 1, y: 0};
-            case 'down':
-                return {x: 0, y: 1};
-            case 'left':
-                return {x: -1, y: 0};
-        }
-    }
+    //GetShiftFromDirection(direction)
+    //{
+    //    switch(direction)
+    //    {
+    //        case 'up':
+    //            return {x: 0, y: -1};
+    //        case 'right':
+    //            return {x: 1, y: 0};
+    //        case 'down':
+    //            return {x: 0, y: 1};
+    //        case 'left':
+    //            return {x: -1, y: 0};
+    //    }
+    //}
 
-    GetOpositeDirection(direction)
-    {
-        switch(direction)
-        {
-            case 'up':
-                return 'down';
-            case 'right':
-                return 'left';
-            case 'down':
-                return 'up';
-            case 'left':
-                return 'right';
-        }
-    }
-
-    GetLandPointAt(x, y)
-    {
-        const key = this.pichiMap.GetKey(x, y);
-        if(!this.pichiMap.Points.has(key))
-        {
-            return null;
-        }
-
-        const pt = this.pichiMap.Points.get(key);
-        if(pt.IsLand)
-        {
-            return pt;
-        }
-
-        return null;
-    }
+    //GetLandPointAt(x, y)
+    //{
+    //    const key = this.pichiMap.GetKey(x, y);
+    //    if(!this.pichiMap.Points.has(key))
+    //    {
+    //        return null;
+    //    }
+    //
+    //    const pt = this.pichiMap.Points.get(key);
+    //    if(pt.IsLand)
+    //    {
+    //        return pt;
+    //    }
+    //
+    //    return null;
+    //}
 
 
 }
