@@ -59,9 +59,9 @@ function drawMap()
 
 function drawShape(shape)
 {
-  const r = random(255);
-  const g = random(255);
-  const b = random(255);
+  const r = 255//random(255);
+  const g = 0//random(255);
+  const b = 0//random(255);
   fill(shapeR, shapeG, shapeB);
 
   stroke(64);

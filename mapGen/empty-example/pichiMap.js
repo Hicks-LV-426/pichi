@@ -12,20 +12,20 @@ class PichiMap
     Initialize = function()
     {
         noiseDetail(8);
-        let xoff = 0.01;
+        let yoff = 0.01;
 
         // generate points
-        for (let x = 0; x < this.Width; x++) 
+        for (let y = 0; y < this.Width; y++) 
         {
-            let yoff = 0.01;
+            let xoff = 0.01;
 
-            for (let y = 0; y < this.Height; y++)
+            for (let x = 0; x < this.Height; x++)
             {
                 //AddSingleSquare(x, y);
                 this.AddNoisePoint(x, y, xoff, yoff);
-                yoff += this.inc;
+                xoff += this.inc;
             }
-            xoff += this.inc;
+            yoff += this.inc;
         }
     }
 
