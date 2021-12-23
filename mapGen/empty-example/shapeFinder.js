@@ -1,182 +1,133 @@
 class ShapeFinder
 {
+
+    Shapes = new Map();
+
     constructor(pMap)
     {
         this.pichiMap = pMap;
+        this.MaxShapeId = 0;
     }
 
     FindShape()
     {
-        for (const [key, value] of this.pichiMap.Points) 
+        let started = false;
+        let finished = false;
+        let currentPixel = null;
+        let pixels = [];
+
+        const width = this.pichiMap.Width;
+        const height = this.pichiMap.Height;
+
+        for(let y = 0; y < height; y++)
         {
-            if(value.IsLand)
+            for(let x = 0; x < width; x++)
             {
-                console.log('land found at '.concat(key));
-                return this.TraceShape(value);
-            }
-        }
-    }
+                currentPixel = this.pixel(x, y);
+                
+                if(!currentPixel.IsLand)
+                {
+                    continue;
+                }
 
-    TraceShape(startingPoint)
-    {
-        let shape = new PichiShape();
+                pixels.push(currentPixel);
 
-        shape.AddPoint(startingPoint);
-        const defaultDirection = 'right';
-        let nextPoint = this.FindNeighbour(startingPoint, shape, defaultDirection);
+                if(currentPixel.IsLand && this.pixel(x-1, y)?.IsLand != true)
+                {
+                    started = true;
+                }
+                if(currentPixel.IsLand && this.pixel(x+1, y)?.IsLand != true)
+                {
+                    finished = true;
+                }
 
-
-        let counter = 0;
-        let maxWalkDistance = this.pichiMap.Height * this.pichiMap.Width;
-
-        while(nextPoint && nextPoint.Pt.Key != startingPoint.Key)
-        {
-            if(counter > maxWalkDistance)
-            {
-                break;
-            }
-
-            shape.AddPoint(nextPoint.Pt);
-            nextPoint = this.FindNeighbour(nextPoint.Pt, shape, nextPoint.Direction);
-
-            // try walk back if next point not found
-            if(!nextPoint)
-            {
-                nextPoint = this.WalkBack(shape);
-            }
-            counter += 1;
-        }
-
-        return shape;
-    }
-
-    FindNeighbour(currentPoint, shape, direction)
-    {
-        const walkSequence = this.GetWalkSequence(direction);
-
-        for(const dir of walkSequence)
-        {
-            let pt = this.FindNeighbourAtDirection(dir, currentPoint, shape);
-            if(pt)
-            {
-                return { Pt: pt, Direction: dir};
+                if(started && finished)
+                {
+                    this.addShape(pixels);
+                    started = false;
+                    finished = false;
+                    pixels = [];
+                }
+                //if pixel(i; j) == 1 and pixel(i - 1; j) == 0 then
+                //  ledge = Pixel(i; j)
+                //end if
             }
         }
 
-        return null;
+        return this.Shapes;
     }
 
-    GetWalkSequence(direction)
+    pixel(x, y)
     {
-        switch(direction)
+        return this.pichiMap.GetPoint(x, y);
+    }
+    getKey(x, y)
+    {
+        return this.pichiMap.GetKey(x, y);
+    }
+
+    getNewShapeId()
+    {
+        this.MaxShapeId += 1;
+        return this.MaxShapeId;
+    }
+
+    addShape(pixels)
+    {
+        // find existing shape above left to right edge
+        let abovePixelKey = null;
+        
+        const currentShapeId = this.getNewShapeId();
+
+        let shapeIds = [];
+        shapeIds.push(currentShapeId);
+
+        for(let pixel of pixels)
         {
-            case 'up':
-                return ['left', 'up', 'right', 'down'];
-            case 'right':
-                return ['up', 'right', 'down', 'left'];
-            case 'down':
-                return ['right', 'down', 'left', 'up'];
-            case 'left':
-                return ['down', 'left', 'up', 'right'];
-        }
-    }
+            this.addPixelToShape(pixel, currentShapeId);
 
-    FindNeighbourAtDirection(direction, currentPoint, shape)
-    {
-        let nextLocation = this.GetLocation(direction, currentPoint);
-
-        let pt = this.GetPointAt(nextLocation.x, nextLocation.y);
-        if(this.IsValidPoint(pt, shape))
-        {
-            return pt;
-        }
-        return null;
-    }
-
-    GetLocation(direction, currentPoint)
-    {
-        switch(direction)
-        {
-            case 'up':
-                return {x: currentPoint.X, y: currentPoint.Y - 1}
-            case 'right':
-                return {x: currentPoint.X + 1, y: currentPoint.Y}
-            case 'down':
-                return {x: currentPoint.X, y: currentPoint.Y + 1}
-            case 'left':
-                return {x: currentPoint.X - 1, y: currentPoint.Y}
-        }
-    }
-
-    GetPointAt(x, y)
-    {
-        let key = this.pichiMap.GetKey(x, y);
-        if(this.pichiMap.Points.has(key))
-        {
-            return this.pichiMap.Points.get(key);
-        }
-
-        return null;
-    }
-
-    IsValidPoint(nextPoint, shape)
-    {
-        if(!nextPoint?.IsLand)
-        { 
-            return false;
-        }
-
-        return !shape.has(nextPoint.Key);
-    }
-
-    WalkBack(shape)
-    {
-        //console.log('walking back @ shape length of ', shape.length());
-        let point = null;
-        for(let i = shape.length() - 2; i > 0; i--)
-        {
-            //console.log('looking for neighbours at ', i);
-            point = this.FindNeighbour(shape.point(i), shape, 'right');
-            if(point)
+            abovePixelKey = this.getKey(pixel.X, pixel.Y - 1);
+            
+            
+            if(this.Shapes.has(abovePixelKey))
             {
-                break;
+                let aboveShapeId = this.Shapes.get(abovePixelKey).ShapeId;
+                if(!shapeIds.includes(aboveShapeId))
+                {
+                    shapeIds.push(aboveShapeId);
+                }
             }
         }
 
-        return point;
+        if(shapeIds.length > 1)
+        {
+            this.mergeShapes(shapeIds);
+        }
     }
 
-    //GetShiftFromDirection(direction)
-    //{
-    //    switch(direction)
-    //    {
-    //        case 'up':
-    //            return {x: 0, y: -1};
-    //        case 'right':
-    //            return {x: 1, y: 0};
-    //        case 'down':
-    //            return {x: 0, y: 1};
-    //        case 'left':
-    //            return {x: -1, y: 0};
-    //    }
-    //}
+    addPixelToShape(pixel, shapeId)
+    {
+        
+        pixel.ShapeId = shapeId;
+        this.Shapes.set(pixel.Key, pixel);
+    }
 
-    //GetLandPointAt(x, y)
-    //{
-    //    const key = this.pichiMap.GetKey(x, y);
-    //    if(!this.pichiMap.Points.has(key))
-    //    {
-    //        return null;
-    //    }
-    //
-    //    const pt = this.pichiMap.Points.get(key);
-    //    if(pt.IsLand)
-    //    {
-    //        return pt;
-    //    }
-    //
-    //    return null;
-    //}
+    mergeShapes(shapeIDs)
+    {
+        let shapeId = 0;
 
+        for(const [key, pixel] of this.Shapes)
+        {
+            if(shapeIDs.includes(pixel.ShapeId))
+            {
+                if(shapeId == 0)
+                {
+                    shapeId = pixel.ShapeId;
+                }
+
+                pixel.ShapeId = shapeId;
+            }
+        }
+    }
 
 }

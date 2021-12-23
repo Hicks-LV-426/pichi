@@ -47,7 +47,7 @@ class PichiMap
     AddPoint(x, y, strength)
     {
         const key = this.GetKey(x, y);
-        this.Points.set(key, {Key: key, X: x, Y: y, Value: strength, IsLand: strength > 0.55});
+        this.Points.set(key, {Key: key, X: x, Y: y, Value: strength, IsLand: strength > 0.55, ShapeId: 0});
     }
 
     GetKey(x, y)

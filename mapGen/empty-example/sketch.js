@@ -1,10 +1,7 @@
 let sx = 450;
 let sy = 275;
 let res = 4;
-let shapes = [];
-let shapeR = 255;
-let shapeG = 255;
-let shapeB = 255;
+let shapeColors = new Map();
 
 let pichiMap;
 let finder;
@@ -28,6 +25,7 @@ function setup() {
   this.pichiMap = new PichiMap(sx, sy);
   this.pichiMap.Initialize();
   this.finder = new ShapeFinder(this.pichiMap);
+  this.shapeColors = new Map();
 }
 
 function draw() {
@@ -35,8 +33,8 @@ function draw() {
   noStroke();
 
   drawMap();
-  let shape = this.finder.FindShape();
-  this.drawShape(shape);
+  let shapes = this.finder.FindShape();
+  this.drawShape(shapes);
   //drawLines();
   noLoop();
 }
@@ -57,23 +55,31 @@ function drawMap()
   //}
 }
 
-function drawShape(shape)
+function drawShape(shapes)
 {
-  const r = 255//random(255);
-  const g = 0//random(255);
-  const b = 0//random(255);
-  fill(shapeR, shapeG, shapeB);
-
   stroke(64);
   strokeWeight(0.5);
-  fill(r, g, b);
-
-  for (const [key, value] of shape.Points) 
+  for (const [key, pixel] of shapes)
   {
-    square(value.X * res, value.Y * res, res);
+    const color = this.getShapeColor(pixel.ShapeId);
+    const r = map(pixel.Value, 0, 1, 0, color.r);
+    const g = map(pixel.Value, 0, 1, 0, color.g);
+    const b = map(pixel.Value, 0, 1, 0, color.b);
+    fill(r, g, b);
+    square(pixel.X * res, pixel.Y * res, res);
   }
 }
 
+
+function getShapeColor(shapeId)
+{
+  if(!this.shapeColors.has(shapeId))
+  {
+    this.shapeColors.set(shapeId, {r: random(255), g: random(255), b: random(255)});
+  }
+
+  return this.shapeColors.get(shapeId);
+}
 
 
 function drawPoint(drawPoint) {
