@@ -1,5 +1,5 @@
-let sx = 450;
-let sy = 275;
+let sx = 635;
+let sy = 325;
 let res = 4;
 let shapeColors = new Map();
 
