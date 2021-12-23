@@ -75,7 +75,7 @@ function getShapeColor(shapeId)
 {
   if(!this.shapeColors.has(shapeId))
   {
-    this.shapeColors.set(shapeId, {r: random(255), g: random(255), b: random(255)});
+    this.shapeColors.set(shapeId, {r: random(96,255), g: random(96,255), b: random(96,255)});
   }
 
   return this.shapeColors.get(shapeId);
